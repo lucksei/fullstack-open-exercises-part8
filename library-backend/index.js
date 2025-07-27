@@ -126,9 +126,19 @@ const typeDefs = `
       id: ID
       genres: [String!]!
     ): Book
+    editAuthor(
+      name: String!
+      setBornTo: Int!
+    ): Author
   }
 `
 
+// Helpers
+const appendBookCount = (author, books) => {
+  return { ...author, bookCount: books.filter((book) => book.author === author.name).length }
+}
+
+// Resolvers
 const resolvers = {
   Query: {
     bookCount: () => books.length,
@@ -143,7 +153,7 @@ const resolvers = {
       }
       return _books
     },
-    allAuthors: () => authors.map((author) => ({ ...author, bookCount: books.filter((book) => book.author === author.name).length })),
+    allAuthors: () => authors.map((author) => appendBookCount(author, books)),
   },
   Mutation: {
     addBook: (root, args) => {
@@ -158,6 +168,15 @@ const resolvers = {
       const book = { ...args, id: randomUUID() }
       books = books.concat(book)
       return book
+    },
+    editAuthor: (root, args) => {
+      const author = authors.find((author) => author.name === args.name)
+      if (!author) {
+        return null
+      }
+      const editedAuthor = { ...author, born: args.setBornTo }
+      authors = authors.map((author) => author.name === editedAuthor.name ? editedAuthor : author)
+      return appendBookCount(editedAuthor, books)
     }
   }
 }
