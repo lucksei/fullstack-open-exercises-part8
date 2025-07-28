@@ -2,6 +2,8 @@ import PropTypes from 'prop-types';
 import { useQuery } from '@apollo/client';
 import { ALL_AUTHORS } from '../utils/gqlQueries';
 
+import EditAuthorBirth from './EditAuthorBirth';
+
 const Authors = (props) => {
   const query = useQuery(ALL_AUTHORS);
 
@@ -34,6 +36,7 @@ const Authors = (props) => {
           ))}
         </tbody>
       </table>
+      <EditAuthorBirth show={true} />
     </div>
   );
 };
