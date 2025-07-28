@@ -1,12 +1,17 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import { useMutation } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import { EDIT_AUTHOR, ALL_AUTHORS } from '../utils/gqlQueries';
+
+import CustomSelect from './CustomSelect';
 
 const EditAuthorBirth = (props) => {
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
     refetchQueries: [{ query: ALL_AUTHORS }],
   });
+
+  const query = useQuery(ALL_AUTHORS);
+
   const [name, setName] = useState('');
   const [born, setBorn] = useState('');
 
@@ -27,14 +32,21 @@ const EditAuthorBirth = (props) => {
     return null;
   }
 
+  if (query.loading) {
+    return <div>loading...</div>;
+  }
+
+  const authors = query.data.allAuthors;
+
   return (
     <div>
       <h2>Set Birthyear</h2>
       <form>
-        <div>
-          name
-          <input value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
+        <CustomSelect
+          options={authors.map((a) => ({ value: a.name, label: a.name }))}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
         <div>
           born
           <input value={born} onChange={(e) => setBorn(e.target.value)} />
