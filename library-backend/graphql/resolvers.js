@@ -1,5 +1,8 @@
 const { randomUUID } = require('crypto')
+const Author = require('../schemas/author')
+const Book = require('../schemas/book')
 const { authors, books } = require('../utils/mockData')
+
 
 
 const resolvers = {
@@ -20,17 +23,20 @@ const resolvers = {
   },
   Mutation: {
     addBook: (root, args) => {
-      const author = authors.find((author) => author.name === args.author)
-      if (!author) {
-        const newAuthor = {
-          name: args.author,
-          born: null
-        }
-        authors = authors.concat(newAuthor)
-      }
-      const book = { ...args, id: randomUUID() }
-      books = books.concat(book)
-      return book
+      const author = Author.find({ author: args.author })
+      console.log(author)
+      return
+      // const author = authors.find((author) => author.name === args.author)
+      // if (!author) {
+      //   const newAuthor = {
+      //     name: args.author,
+      //     born: null
+      //   }
+      //   authors = authors.concat(newAuthor)
+      // }
+      // const book = { ...args, id: randomUUID() }
+      // books = books.concat(book)
+      // return book
     },
     editAuthor: (root, args) => {
       const author = authors.find((author) => author.name === args.name)
