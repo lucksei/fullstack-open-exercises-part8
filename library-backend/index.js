@@ -1,23 +1,22 @@
-require('dotenv').config()
+const mongoose = require('mongoose')
 const { ApolloServer } = require('@apollo/server')
 const { startStandaloneServer } = require('@apollo/server/standalone')
-const mongoose = require('mongoose')
 
 const typeDefs = require('./graphql/typeDefs')
 const resolvers = require('./graphql/resolvers')
 
+require('dotenv').config()
 const MONGODB_URI = process.env.MONGODB_URI
-
-console.log(`Connecting to ${MONGODB_URI}`)
-
-mongoose.connect(MONGODB_URI)
-  .then(() => {
+const connect = async () => {
+  try {
+    await mongoose.connect(MONGODB_URI)
     console.log("Connected to MongoDB")
-  })
-  .catch((error) => {
+  } catch (error) {
     console.log("Error connecting to MongoDB:", error.message)
-  })
+  }
+}
 
+connect()
 
 const server = new ApolloServer({
   typeDefs,

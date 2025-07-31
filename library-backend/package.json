@@ -9,6 +9,7 @@
   },
   "scripts": {
     "dev": "node --watch index.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "initdb": "node initdb.js"
   }
 }

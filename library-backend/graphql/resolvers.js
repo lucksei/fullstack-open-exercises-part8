@@ -22,10 +22,26 @@ const resolvers = {
     allAuthors: () => authors.map((author) => appendBookCount(author, books)),
   },
   Mutation: {
-    addBook: (root, args) => {
-      const author = Author.find({ author: args.author })
-      console.log(author)
-      return
+    addBook: async (root, args) => {
+      console.log("executing")
+      let bookAuthor = await Author.findOne({ name: args.author })
+      console.log(bookAuthor)
+      if (!bookAuthor) {
+        bookAuthor = new Author({
+          name: args.author,
+          born: null
+        })
+        bookAuthor = await bookAuthor.save()
+      }
+      console.log(bookAuthor)
+      const newBook = new Book({
+        title: args.title,
+        published: args.published,
+        author: bookAuthor._id,
+        genres: args.genres
+      })
+      const savedBook = await newBook.save()
+      return savedBook.populate('author')
       // const author = authors.find((author) => author.name === args.author)
       // if (!author) {
       //   const newAuthor = {
