@@ -1,7 +1,10 @@
 {
   "dependencies": {
     "@apollo/server": "^5.0.0",
-    "graphql": "^16.11.0"
+    "graphql": "^16.11.0",
+    "i": "^0.3.7",
+    "mongoose": "^7.8.7",
+    "mongoose-unique-validator": "^4.0.1"
   },
   "scripts": {
     "dev": "node --watch index.js",
