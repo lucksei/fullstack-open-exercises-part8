@@ -29,6 +29,7 @@ const typeDefs = `
   }
   type Mutation {
     addBook(
+      token: String!
       title: String!
       published: Int!
       author: String!
@@ -36,6 +37,7 @@ const typeDefs = `
       genres: [String!]!
     ): Book
     editAuthor(
+      token: String!
       name: String!
       setBornTo: Int!
     ): Author

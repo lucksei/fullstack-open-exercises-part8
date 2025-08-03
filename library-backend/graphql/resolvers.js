@@ -13,12 +13,29 @@ let currentToken = {
   value: null
 }
 
+const validateToken = async (token) => {
+  if (!token) {
+    return null
+  }
+  try {
+    const decodedTokenPayload = jwt.verify(token, process.env.SECRET)
+    const { username, id } = decodedTokenPayload
+    const user = await User.findById(id)
+    if (!user) {
+      return null
+    }
+    return user
+  } catch (e) {
+    return null
+  }
+}
+
 const hardcodedPassword = "verysafepassword"
 
 const resolvers = {
   Query: {
-    bookCount: () => books.length,
-    authorCount: () => authors.length,
+    bookCount: async () => (await Book.find({})).length,
+    authorCount: async () => (await Author.find({})).length,
     allBooks: async (root, args) => {
       let booksQuery = Book.find({}).populate('author')
       if (args.author) {
@@ -30,24 +47,26 @@ const resolvers = {
       let books = await booksQuery
       return books
     },
-    allAuthors: () => authors.map((author) => appendBookCount(author, books)),
+    // allAuthors: () => authors.map((author) => appendBookCount(author, books)),
+    allAuthors: async () => await Author.find({}),
     me: async () => {
-      if (!currentToken.value) {
-        return null
-      }
-      const decodedToken = jwt.verify(currentToken.value, process.env.SECRET, { complete: true })
-      const { username, id, _ } = decodedToken.payload
-      const user = await User.findById(id)
-      return user
+      return validateToken(currentToken.value)
     },
   },
   Mutation: {
     addBook: async (root, args) => {
-      const { title, published, author, genres } = args
-      let bookAuthor = await Author.findOne({ name: args.author })
+      const { title, published, author, genres, token } = args
+      if (! await validateToken(token)) {
+        throw new GraphQLError("User token is null or invalid", {
+          extensions: {
+            code: "INVALID_TOKEN",
+          }
+        })
+      }
+      let bookAuthor = await Author.findOne({ name: author })
       if (!bookAuthor) {
         bookAuthor = new Author({
-          name: args.author,
+          name: author,
           born: null
         })
         try {
@@ -81,14 +100,19 @@ const resolvers = {
         })
       }
     },
-    editAuthor: (root, args) => {
-      const author = authors.find((author) => author.name === args.name)
-      if (!author) {
-        return null
+    editAuthor: async (root, args) => {
+      const { name, setBornTo, token } = args
+      if (! await validateToken(token)) {
+        throw new GraphQLError("User token is null or invalid", {
+          extensions: {
+            code: "INVALID_TOKEN",
+          }
+        })
       }
-      const editedAuthor = { ...author, born: args.setBornTo }
-      authors = authors.map((author) => author.name === editedAuthor.name ? editedAuthor : author)
-      return appendBookCount(editedAuthor, books)
+      const editedAuthor = await Author.findOneAndUpdate({ name }, {
+        born: setBornTo,
+      }, { new: true })
+      return editedAuthor
     },
     createUser: async (root, args) => {
       const { username, favoriteGenre } = args
