@@ -30,7 +30,7 @@ const validateToken = async (token) => {
   }
 }
 
-const hardcodedPassword = "verysafepassword"
+const hardcodedPassword = "admin"
 
 const resolvers = {
   Query: {
@@ -120,11 +120,9 @@ const resolvers = {
     login: async (root, args) => {
       const { username, password } = args
       const user = await User.findOne({ username })
-      if (!user) {
-        return null
-      }
-      if (password !== hardcodedPassword) {
-        return null
+      if (!user || password !== hardcodedPassword) {
+        throw new GraphQLError("User or password is incorrect", { extensions: { code: "BAD_USER_INPUT" } })
+        // return null
       }
       const userForToken = {
         username: user.username,

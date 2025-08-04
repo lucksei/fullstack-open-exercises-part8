@@ -36,13 +36,14 @@ const Authors = (props) => {
           ))}
         </tbody>
       </table>
-      <EditAuthorBirth show={true} />
+      <EditAuthorBirth show={props.token} />
     </div>
   );
 };
 
 Authors.propTypes = {
   show: PropTypes.bool.isRequired,
+  token: PropTypes.string,
 };
 
 export default Authors;
