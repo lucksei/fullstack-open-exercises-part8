@@ -4,7 +4,7 @@ const Author = require('../schemas/author')
 const Book = require('../schemas/book')
 const User = require('../schemas/user')
 
-const { authors, books } = require('../utils/mockData')
+const { appendBookCount } = require('../utils/helpers')
 
 // Global token, not the best approach for user logging though
 // but 'me' query had no variables so i supposed that it wanted
@@ -37,6 +37,7 @@ const resolvers = {
     bookCount: async () => (await Book.find({})).length,
     authorCount: async () => (await Author.find({})).length,
     allBooks: async (root, args) => {
+      // NOTE: The allBooks is not returning authors's bookCount field yet... TODO: fix
       let booksQuery = Book.find({}).populate('author')
       if (args.author) {
         booksQuery = booksQuery.where('author').equals(args.author)
@@ -45,10 +46,20 @@ const resolvers = {
         booksQuery = booksQuery.where('genres').equals(args.genre)
       }
       let books = await booksQuery
+
       return books
     },
-    // allAuthors: () => authors.map((author) => appendBookCount(author, books)),
-    allAuthors: async () => await Author.find({}),
+    allAuthors: async () => {
+      const authors = await Author.find({})
+      const books = await Book.find({})
+
+      return authors.map(author => ({
+        name: author.name,
+        born: author.born,
+        id: author.id,
+        bookCount: books.filter(book => book.author.toString() === author._id.toString()).length,
+      }))
+    },
     me: async () => {
       return validateToken(currentToken.value)
     },
@@ -57,47 +68,24 @@ const resolvers = {
     addBook: async (root, args) => {
       const { title, published, author, genres, token } = args
       if (! await validateToken(token)) {
-        throw new GraphQLError("User token is null or invalid", {
-          extensions: {
-            code: "INVALID_TOKEN",
-          }
-        })
+        throw new GraphQLError("User token is null or invalid", { extensions: { code: "INVALID_TOKEN", } })
       }
+
       let bookAuthor = await Author.findOne({ name: author })
       if (!bookAuthor) {
-        bookAuthor = new Author({
-          name: author,
-          born: null
-        })
+        bookAuthor = new Author({ name: author, born: null })
         try {
           await bookAuthor.save()
         } catch (error) {
-          throw new GraphQLError("Error saving author", {
-            extensions: {
-              code: "BAD_USER_INPUT",
-              invalidArgs: args,
-              error,
-            }
-          })
+          throw new GraphQLError("Error saving author", { extensions: { code: "BAD_USER_INPUT", invalidArgs: args, error } })
         }
       }
-      const newBook = new Book({
-        title,
-        published,
-        author: bookAuthor._id,
-        genres,
-      })
       try {
-        await newBook.save()
-        return newBook.populate('author')
+        const newBook = new Book({ title, published, author: bookAuthor._id, genres, })
+        const savedBook = await newBook.save()
+        return await savedBook.populate('author')
       } catch (error) {
-        throw new GraphQLError("Error saving book", {
-          extensions: {
-            code: "BAD_USER_INPUT",
-            invalidArgs: args,
-            error,
-          }
-        })
+        throw new GraphQLError("Error saving book", { extensions: { code: "BAD_USER_INPUT", invalidArgs: args, error } })
       }
     },
     editAuthor: async (root, args) => {
