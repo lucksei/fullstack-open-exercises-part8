@@ -4,30 +4,29 @@ import { useMutation } from '@apollo/client';
 import { ALL_AUTHORS, ALL_BOOKS, ADD_BOOK } from '../utils/gqlQueries';
 
 const NewBook = (props) => {
-  const [createBook] = useMutation(ADD_BOOK, {
-    refetchQueries: [{ query: ALL_AUTHORS }, { query: ALL_BOOKS }],
-  });
+  const [error, setError] = useState(null);
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [published, setPublished] = useState('');
   const [genre, setGenre] = useState('');
   const [genres, setGenres] = useState([]);
 
-  if (!props.show) {
-    return null;
-  }
+  const [createBook] = useMutation(ADD_BOOK, {
+    refetchQueries: [{ query: ALL_AUTHORS }, { query: ALL_BOOKS }],
+    onError: (error) => {
+      setError(error.graphQLErrors.message);
+    },
+  });
 
-  const submit = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-
-    console.log('add book...');
-
-    createBook({
+    await createBook({
       variables: {
         title,
         author,
         published: parseInt(published),
         genres,
+        token: props.token,
       },
     });
 
@@ -43,9 +42,13 @@ const NewBook = (props) => {
     setGenre('');
   };
 
+  if (!props.show) {
+    return null;
+  }
+
   return (
     <div>
-      <form onSubmit={submit}>
+      <form onSubmit={handleSubmit}>
         <div>
           title
           <input
@@ -80,11 +83,13 @@ const NewBook = (props) => {
         <div>genres: {genres.join(' ')}</div>
         <button type="submit">create book</button>
       </form>
+      <div>{error}</div>
     </div>
   );
 };
 NewBook.propTypes = {
   show: PropTypes.bool.isRequired,
+  token: PropTypes.string,
 };
 
 export default NewBook;

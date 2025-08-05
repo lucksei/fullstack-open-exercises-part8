@@ -11,10 +11,18 @@ const ALL_AUTHORS = gql`
 `;
 
 const EDIT_AUTHOR = gql`
-  mutation EditAuthor($name: String!, $setBornTo: Int!) {
-    editAuthor(name: $name, setBornTo: $setBornTo) {
-      name
-      born
+  mutation EditAuthor(
+    $name: String!, 
+    $setBornTo: Int!
+    $token: String!
+    ) {
+      editAuthor(
+        name: $name, 
+        setBornTo: $setBornTo
+        token: $token
+        ) {
+          name
+          born
     }
   }`
 
@@ -24,15 +32,20 @@ const ADD_BOOK = gql`
     $author: String!
     $published: Int!
     $genres: [String!]!
+    $token: String!
   ) {
     addBook(
       title: $title
       author: $author
       published: $published
       genres: $genres
+      token: $token
     ) {
       title
-      author
+      author {
+        name,
+        born,
+      }
       published
       genres
     }

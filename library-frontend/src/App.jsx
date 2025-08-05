@@ -50,7 +50,7 @@ const App = () => {
 
       <Books show={page === 'books'} />
 
-      <NewBook show={page === 'add'} />
+      <NewBook show={page === 'add'} token={token} />
 
       <Login show={page === 'login' && token === null} setToken={setToken} />
     </div>

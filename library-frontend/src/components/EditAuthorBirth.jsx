@@ -6,8 +6,12 @@ import { EDIT_AUTHOR, ALL_AUTHORS } from '../utils/gqlQueries';
 import CustomSelect from './CustomSelect';
 
 const EditAuthorBirth = (props) => {
+  const [error, setError] = useState(null);
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
     refetchQueries: [{ query: ALL_AUTHORS }],
+    onError: (error) => {
+      setError(error.graphQLErrors.message);
+    },
   });
 
   const query = useQuery(ALL_AUTHORS);
@@ -21,6 +25,7 @@ const EditAuthorBirth = (props) => {
       variables: {
         name,
         setBornTo: parseInt(born),
+        token: props.token,
       },
     });
 
@@ -61,6 +66,7 @@ const EditAuthorBirth = (props) => {
 
 EditAuthorBirth.propTypes = {
   show: PropTypes.bool.isRequired,
+  token: PropTypes.string,
 };
 
 export default EditAuthorBirth;
