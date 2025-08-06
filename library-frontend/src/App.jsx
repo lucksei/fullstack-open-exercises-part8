@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
-import { useApolloClient } from '@apollo/client';
+import { useApolloClient, useQuery } from '@apollo/client';
+import { ME } from './utils/gqlQueries';
 
 import Authors from './components/Authors';
 import Books from './components/Books';
 import NewBook from './components/NewBook';
 import Login from './components/Login';
+import Recommend from './components/Recommend';
 
 const App = () => {
   const client = useApolloClient();
   const [token, setToken] = useState(null);
   const [page, setPage] = useState('authors');
+  const meQuery = useQuery(ME, { variables: { token: token } });
 
   useEffect(() => {
     const userToken = localStorage.getItem('library-user-token');
@@ -39,6 +42,9 @@ const App = () => {
         {token ? (
           <button onClick={() => setPage('add')}>add book</button>
         ) : null}
+        {token ? (
+          <button onClick={() => setPage('recommend')}>recommend</button>
+        ) : null}
         {token === null ? (
           <button onClick={() => setPage('login')}>login</button>
         ) : (
@@ -51,6 +57,11 @@ const App = () => {
       <Books show={page === 'books'} />
 
       <NewBook show={page === 'add'} token={token} />
+
+      <Recommend
+        show={page === 'recommend' && token !== null}
+        favoriteGenre={meQuery.data?.me?.favoriteGenre}
+      />
 
       <Login show={page === 'login' && token === null} setToken={setToken} />
     </div>

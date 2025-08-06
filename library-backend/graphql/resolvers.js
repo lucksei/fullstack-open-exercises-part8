@@ -6,13 +6,6 @@ const User = require('../schemas/user')
 
 const { appendBookCount } = require('../utils/helpers')
 
-// Global token, not the best approach for user logging though
-// but 'me' query had no variables so i supposed that it wanted
-// me to "remember" that info somewhere in the backend.
-let currentToken = {
-  value: null
-}
-
 const validateToken = async (token) => {
   if (!token) {
     return null
@@ -60,8 +53,9 @@ const resolvers = {
         bookCount: books.filter(book => book.author.toString() === author._id.toString()).length,
       }))
     },
-    me: async () => {
-      return validateToken(currentToken.value)
+    me: async (root, args) => {
+      const { token } = args
+      return validateToken(token)
     },
   },
   Mutation: {
@@ -128,8 +122,7 @@ const resolvers = {
         username: user.username,
         id: user._id,
       }
-      currentToken.value = jwt.sign(userForToken, process.env.SECRET)
-      return currentToken
+      return { value: jwt.sign(userForToken, process.env.SECRET) }
     },
   }
 }

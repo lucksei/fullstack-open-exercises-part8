@@ -78,4 +78,12 @@ const BOOK_GENRES = gql`
   }
 `;
 
-export { ALL_AUTHORS, EDIT_AUTHOR, ALL_BOOKS, ADD_BOOK, LOGIN, BOOK_GENRES };
+const ME = gql`
+  query Me($token: String!) {
+    me(token: $token) {
+      username,
+      favoriteGenre
+    }
+  }`
+
+export { ALL_AUTHORS, EDIT_AUTHOR, ALL_BOOKS, ADD_BOOK, LOGIN, BOOK_GENRES, ME };
