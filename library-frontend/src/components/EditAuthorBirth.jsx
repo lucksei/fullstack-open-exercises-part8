@@ -60,6 +60,7 @@ const EditAuthorBirth = (props) => {
           update author
         </button>
       </form>
+      <div>{error}</div>
     </div>
   );
 };
