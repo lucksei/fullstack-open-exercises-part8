@@ -1,27 +1,30 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { LOGIN } from '../utils/gqlQueries';
+import { LOGIN, ME, ALL_BOOKS } from '../utils/gqlQueries';
 const Login = ({ show, setToken }) => {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
-  const [login, result] = useMutation(LOGIN, {
+  const [login] = useMutation(LOGIN, {
     onError: (error) => {
       setError(error.graphQLErrors[0].message);
     },
+    onCompleted: (data) => {
+      setToken(data.login.value);
+    },
+    refetchQueries: [{ query: ME }, { query: ALL_BOOKS }],
   });
 
-  useEffect(() => {
-    if (result.data?.login) {
-      const token = result.data.login.value;
-      setToken(token);
-    }
-  }, [result.data, setToken]);
+  // useEffect(() => {
+  //   if (result.data?.login) {
+  //     const token = result.data.login.value;
+  //     setToken(token);
+  //   }
+  // }, [result.data, setToken]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log('submit');
 
     await login({
       variables: {

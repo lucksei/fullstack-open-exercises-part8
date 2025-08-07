@@ -12,7 +12,7 @@ const App = () => {
   const client = useApolloClient();
   const [token, setToken] = useState(null);
   const [page, setPage] = useState('authors');
-  const meQuery = useQuery(ME, { variables: { token: token } });
+  const meQuery = useQuery(ME);
 
   useEffect(() => {
     const userToken = localStorage.getItem('library-user-token');
@@ -21,17 +21,20 @@ const App = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem('library-user-token', token);
-      setPage('authors');
-    }
-  }, [token]);
-
   const handleLogout = () => {
     setToken(null);
     localStorage.clear();
     client.resetStore();
+  };
+
+  const handleToken = (token) => {
+    setToken(token);
+    localStorage.setItem('library-user-token', token);
+    // NOTE: resetting the cache too quickly causes the token to not be set, this is an, albiet ugly, workaround to this issue
+    setTimeout(() => {
+      client.resetStore();
+      setPage('authors');
+    }, 500);
   };
 
   return (
@@ -63,7 +66,7 @@ const App = () => {
         favoriteGenre={meQuery.data?.me?.favoriteGenre}
       />
 
-      <Login show={page === 'login' && token === null} setToken={setToken} />
+      <Login show={page === 'login' && token === null} setToken={handleToken} />
     </div>
   );
 };

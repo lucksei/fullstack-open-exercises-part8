@@ -79,8 +79,8 @@ const BOOK_GENRES = gql`
 `;
 
 const ME = gql`
-  query Me($token: String!) {
-    me(token: $token) {
+  query Me {
+    me {
       username,
       favoriteGenre
     }

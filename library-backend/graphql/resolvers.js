@@ -53,9 +53,9 @@ const resolvers = {
         bookCount: books.filter(book => book.author.toString() === author._id.toString()).length,
       }))
     },
-    me: async (root, args) => {
-      const { token } = args
-      return validateToken(token)
+    me: async (root, args, context) => {
+      console.log(context)
+      return context.currentUser
     },
   },
   Mutation: {
