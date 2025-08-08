@@ -1,47 +1,84 @@
-const mongoose = require('mongoose')
-const jwt = require('jsonwebtoken')
-const { JsonWebTokenError } = require('jsonwebtoken')
 const { ApolloServer } = require('@apollo/server')
-const { startStandaloneServer } = require('@apollo/server/standalone')
+const { expressMiddleware } = require('@as-integrations/express5')
+const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer')
+const { makeExecutableSchema } = require('@graphql-tools/schema');
+const { WebSocketServer } = require('ws');
+const { useServer } = require('graphql-ws/lib/use/ws');
+
+const express = require('express')
+const cors = require('cors')
+const http = require('http')
+
+const jwt = require('jsonwebtoken')
+const mongoose = require('mongoose')
+
+const User = require('./schemas/user')
 
 const typeDefs = require('./graphql/typeDefs')
 const resolvers = require('./graphql/resolvers')
-const User = require('./schemas/user')
 
 require('dotenv').config()
 const MONGODB_URI = process.env.MONGODB_URI
-const connect = async () => {
-  try {
-    await mongoose.connect(MONGODB_URI)
+
+mongoose.connect(MONGODB_URI)
+  .then(() => {
     console.log("Connected to MongoDB")
-  } catch (error) {
+  })
+  .catch((error) => {
     console.log("Error connecting to MongoDB:", error.message)
-  }
+  })
+
+const start = async () => {
+  const app = express()
+  const httpServer = http.createServer(app)
+
+  const wsServer = new WebSocketServer({
+    server: httpServer,
+    path: '/',
+  })
+
+  const schema = makeExecutableSchema({ typeDefs, resolvers })
+  const serverCleanup = useServer({ schema }, wsServer)
+
+  const server = new ApolloServer({
+    schema,
+    plugins: [
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+      {
+        async serverWillStart() {
+          return {
+            async drainServer() {
+              await serverCleanup.dispose()
+            }
+          }
+        }
+      }
+    ],
+  })
+
+  await server.start()
+
+  app.use(
+    '/',
+    cors(),
+    express.json(),
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        const auth = req.headers.authorization
+        if (auth?.toLowerCase().startsWith('bearer ')) {
+          const token = auth.substring(7)
+          const decodedToken = jwt.verify(token, process.env.SECRET)
+          const currentUser = await User.findById(decodedToken.id)
+          return { currentUser }
+        }
+      }
+    })
+  )
+
+  const PORT = 4000
+  httpServer.listen(PORT, () => {
+    console.log(`Server is now running on http://localhost:${PORT}`)
+  })
 }
 
-connect()
-
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-})
-
-startStandaloneServer(server, {
-  listen: { port: 4000 },
-  context: async ({ req }) => {
-    const auth = req.headers.authorization
-    if (auth?.toLowerCase().startsWith('bearer ')) {
-      const token = auth.substring(7)
-      try {
-        const decodedToken = jwt.verify(token, process.env.SECRET)
-        const user = await User.findById(decodedToken.id)
-        return { currentUser: user }
-      } catch (error) {
-        console.error('Error decoding token:', error)
-      }
-    }
-    return {}
-  },
-}).then(({ url }) => {
-  console.log(`Server ready at ${url}`)
-})
+start()

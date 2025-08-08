@@ -4,6 +4,9 @@ const Author = require('../schemas/author')
 const Book = require('../schemas/book')
 const User = require('../schemas/user')
 
+const { PubSub } = require('graphql-subscriptions')
+const pubsub = new PubSub()
+
 const { appendBookCount } = require('../utils/helpers')
 
 const validateToken = async (token) => {
@@ -54,14 +57,13 @@ const resolvers = {
       }))
     },
     me: async (root, args, context) => {
-      console.log(context)
       return context.currentUser
     },
   },
   Mutation: {
-    addBook: async (root, args) => {
-      const { title, published, author, genres, token } = args
-      if (! await validateToken(token)) {
+    addBook: async (root, args, context) => {
+      const { title, published, author, genres } = args
+      if (!context.currentUser) {
         throw new GraphQLError("User token is null or invalid", { extensions: { code: "INVALID_TOKEN", } })
       }
 
@@ -77,14 +79,16 @@ const resolvers = {
       try {
         const newBook = new Book({ title, published, author: bookAuthor._id, genres, })
         const savedBook = await newBook.save()
-        return await savedBook.populate('author')
+        const savedBookPopulated = await savedBook.populate('author')
+        pubsub.publish('BOOK_ADDED', { bookAdded: savedBookPopulated })
+        return savedBookPopulated
       } catch (error) {
         throw new GraphQLError("Error saving book", { extensions: { code: "BAD_USER_INPUT", invalidArgs: args, error } })
       }
     },
-    editAuthor: async (root, args) => {
-      const { name, setBornTo, token } = args
-      if (! await validateToken(token)) {
+    editAuthor: async (root, args, context) => {
+      const { name, setBornTo } = args
+      if (!context.currentUser) {
         throw new GraphQLError("User token is null or invalid", {
           extensions: {
             code: "INVALID_TOKEN",
@@ -124,6 +128,11 @@ const resolvers = {
       }
       return { value: jwt.sign(userForToken, process.env.SECRET) }
     },
+  },
+  Subscription: {
+    bookAdded: {
+      subscribe: () => pubsub.asyncIterableIterator('BOOK_ADDED'),
+    }
   }
 }
 
