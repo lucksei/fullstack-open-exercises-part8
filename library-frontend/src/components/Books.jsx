@@ -3,14 +3,16 @@ import _ from 'lodash';
 import PropTypes from 'prop-types';
 import { useQuery } from '@apollo/client';
 import { ALL_BOOKS, BOOK_GENRES } from '../utils/gqlQueries';
+import CustomSelect from './CustomSelect';
 
 const Books = (props) => {
   const [genre, setGenre] = useState(null);
   const booksQuery = useQuery(ALL_BOOKS, { variables: { genre } });
   const allBooksGenre = useQuery(BOOK_GENRES);
 
-  const handleClick = (e) => {
-    setGenre(e.target.name);
+  const handleGenreChange = (e) => {
+    const genreValue = e.target.value;
+    setGenre(genreValue === 'all' ? null : genreValue);
   };
 
   if (!props.show) {
@@ -45,12 +47,17 @@ const Books = (props) => {
         </tbody>
       </table>
       <div>
-        <button onClick={() => setGenre(null)}>all</button>
+        <CustomSelect
+          options={genres.concat('all').map((g) => ({ value: g, label: g }))}
+          value={genre ? genre : 'all'}
+          onChange={handleGenreChange}
+        />
+        {/* <button onClick={() => setGenre(null)}>all</button>
         {genres.map((g) => (
-          <button key={g} name={g} onClick={handleClick}>
+          <button key={g} name={g} onClick={handleGenreChange}>
             {g}
           </button>
-        ))}
+        ))} */}
       </div>
     </div>
   );
