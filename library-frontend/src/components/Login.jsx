@@ -16,13 +16,6 @@ const Login = ({ show, setToken }) => {
     refetchQueries: [{ query: ME }, { query: ALL_BOOKS }],
   });
 
-  // useEffect(() => {
-  //   if (result.data?.login) {
-  //     const token = result.data.login.value;
-  //     setToken(token);
-  //   }
-  // }, [result.data, setToken]);
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
