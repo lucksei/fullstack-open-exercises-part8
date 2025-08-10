@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useApolloClient, useQuery } from '@apollo/client';
-import { ME } from './utils/gqlQueries';
+import { useApolloClient, useQuery, useSubscription } from '@apollo/client';
+import { ME, BOOK_ADDED } from './utils/gqlQueries';
 
 import Authors from './components/Authors';
 import Books from './components/Books';
@@ -13,6 +13,17 @@ const App = () => {
   const [token, setToken] = useState(null);
   const [page, setPage] = useState('authors');
   const meQuery = useQuery(ME);
+  useSubscription(BOOK_ADDED, {
+    onData({ data }) {
+      console.log(data);
+      const { title, genres, author } = data.data.bookAdded;
+      window.alert(
+        `Book "${title}" added. Author: ${author.name}. Genres: ${genres.join(
+          ', '
+        )}`
+      );
+    },
+  });
 
   useEffect(() => {
     const userToken = localStorage.getItem('library-user-token');

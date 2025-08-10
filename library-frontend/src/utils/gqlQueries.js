@@ -1,53 +1,13 @@
 import { gql } from '@apollo/client'
 
+// Queries
+
 const ALL_AUTHORS = gql`
   query {
     allAuthors {
       name
       born
       bookCount
-    }
-  }
-`;
-
-const EDIT_AUTHOR = gql`
-  mutation EditAuthor(
-    $name: String!, 
-    $setBornTo: Int!
-    $token: String!
-    ) {
-      editAuthor(
-        name: $name, 
-        setBornTo: $setBornTo
-        token: $token
-        ) {
-          name
-          born
-    }
-  }`
-
-const ADD_BOOK = gql`
-  mutation AddBook(
-    $title: String!
-    $author: String!
-    $published: Int!
-    $genres: [String!]!
-    $token: String!
-  ) {
-    addBook(
-      title: $title
-      author: $author
-      published: $published
-      genres: $genres
-      token: $token
-    ) {
-      title
-      author {
-        name,
-        born,
-      }
-      published
-      genres
     }
   }
 `;
@@ -61,14 +21,6 @@ const ALL_BOOKS = gql`
     }
   }
 `;
-
-const LOGIN = gql`
-  mutation Login($username: String!, $password: String!) {
-    login(username: $username, password: $password) {
-      value
-    }
-  }
-`
 
 const BOOK_GENRES = gql`
   query {
@@ -86,4 +38,66 @@ const ME = gql`
     }
   }`
 
-export { ALL_AUTHORS, EDIT_AUTHOR, ALL_BOOKS, ADD_BOOK, LOGIN, BOOK_GENRES, ME };
+// Mutations 
+
+const EDIT_AUTHOR = gql`
+  mutation EditAuthor(
+    $name: String!, 
+    $setBornTo: Int!
+    ) {
+      editAuthor(
+        name: $name, 
+        setBornTo: $setBornTo
+        ) {
+          name
+          born
+    }
+  }`
+
+const ADD_BOOK = gql`
+  mutation AddBook(
+    $title: String!
+    $author: String!
+    $published: Int!
+    $genres: [String!]!
+  ) {
+    addBook(
+      title: $title
+      author: $author
+      published: $published
+      genres: $genres
+    ) {
+      title
+      author {
+        name,
+        born,
+      }
+      published
+      genres
+    }
+  }
+`;
+const LOGIN = gql`
+  mutation Login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      value
+    }
+  }
+`
+
+const BOOK_ADDED = gql`
+  subscription BookAdded {
+    bookAdded {
+      title,
+      genres,
+      author {
+        id,
+        name,
+      },
+      published,
+    }
+  }
+`
+
+
+export { ALL_AUTHORS, ALL_BOOKS, ADD_BOOK, EDIT_AUTHOR, LOGIN, BOOK_GENRES, ME, BOOK_ADDED };
