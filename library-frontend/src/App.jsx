@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useApolloClient, useQuery, useSubscription } from '@apollo/client';
-import { ME, BOOK_ADDED } from './utils/gqlQueries';
+import { ME, BOOK_ADDED, ALL_BOOKS } from './utils/gqlQueries';
 
 import Authors from './components/Authors';
 import Books from './components/Books';
@@ -14,14 +14,24 @@ const App = () => {
   const [page, setPage] = useState('authors');
   const meQuery = useQuery(ME);
   useSubscription(BOOK_ADDED, {
-    onData({ data }) {
-      console.log(data);
-      const { title, genres, author } = data.data.bookAdded;
-      window.alert(
-        `Book "${title}" added. Author: ${author.name}. Genres: ${genres.join(
-          ', '
-        )}`
+    onData({ data, client }) {
+      const bookAdded = data.data.bookAdded;
+      console.log(bookAdded);
+
+      client.cache.updateQuery(
+        { query: ALL_BOOKS, variables: { genres: null } },
+        (cachedData) => {
+          if (!cachedData) {
+            return { allBooks: [bookAdded] };
+          }
+          return {
+            allBooks: cachedData.allBooks.concat(bookAdded),
+          };
+        }
       );
+
+      const { title, author } = bookAdded;
+      window.alert(`Book "${title}" added. Author: ${author.name}.`);
     },
   });
 
@@ -70,7 +80,7 @@ const App = () => {
 
       <Books show={page === 'books'} />
 
-      <NewBook show={page === 'add'} token={token} />
+      <NewBook show={page === 'add'} />
 
       <Recommend
         show={page === 'recommend' && token !== null}

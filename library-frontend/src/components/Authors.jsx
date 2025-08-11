@@ -36,7 +36,7 @@ const Authors = (props) => {
           ))}
         </tbody>
       </table>
-      <EditAuthorBirth show={props.token !== null} token={props.token} />
+      <EditAuthorBirth show={props.token !== null} />
     </div>
   );
 };

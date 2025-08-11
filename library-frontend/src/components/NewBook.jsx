@@ -19,7 +19,7 @@ const NewBook = (props) => {
   const [createBook] = useMutation(ADD_BOOK, {
     refetchQueries: [
       { query: ALL_AUTHORS },
-      { query: ALL_BOOKS },
+      { query: ALL_BOOKS, variables: { genre: null } },
       { query: BOOK_GENRES },
     ],
     onError: (error) => {
@@ -35,7 +35,6 @@ const NewBook = (props) => {
         author,
         published: parseInt(published),
         genres,
-        token: props.token,
       },
     });
 
@@ -98,7 +97,6 @@ const NewBook = (props) => {
 };
 NewBook.propTypes = {
   show: PropTypes.bool.isRequired,
-  token: PropTypes.string,
 };
 
 export default NewBook;

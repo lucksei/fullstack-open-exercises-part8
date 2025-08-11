@@ -25,7 +25,6 @@ const EditAuthorBirth = (props) => {
       variables: {
         name,
         setBornTo: parseInt(born),
-        token: props.token,
       },
     });
 
@@ -67,7 +66,6 @@ const EditAuthorBirth = (props) => {
 
 EditAuthorBirth.propTypes = {
   show: PropTypes.bool.isRequired,
-  token: PropTypes.string,
 };
 
 export default EditAuthorBirth;

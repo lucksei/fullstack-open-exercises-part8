@@ -52,12 +52,6 @@ const Books = (props) => {
           value={genre ? genre : 'all'}
           onChange={handleGenreChange}
         />
-        {/* <button onClick={() => setGenre(null)}>all</button>
-        {genres.map((g) => (
-          <button key={g} name={g} onClick={handleGenreChange}>
-            {g}
-          </button>
-        ))} */}
       </div>
     </div>
   );

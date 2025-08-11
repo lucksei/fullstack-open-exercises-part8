@@ -9,22 +9,22 @@ const pubsub = new PubSub()
 
 const { appendBookCount } = require('../utils/helpers')
 
-const validateToken = async (token) => {
-  if (!token) {
-    return null
-  }
-  try {
-    const decodedTokenPayload = jwt.verify(token, process.env.SECRET)
-    const { username, id } = decodedTokenPayload
-    const user = await User.findById(id)
-    if (!user) {
-      return null
-    }
-    return user
-  } catch (e) {
-    return null
-  }
-}
+// const validateToken = async (token) => {
+//   if (!token) {
+//     return null
+//   }
+//   try {
+//     const decodedTokenPayload = jwt.verify(token, process.env.SECRET)
+//     const { username, id } = decodedTokenPayload
+//     const user = await User.findById(id)
+//     if (!user) {
+//       return null
+//     }
+//     return user
+//   } catch (e) {
+//     return null
+//   }
+// }
 
 const hardcodedPassword = "admin"
 
