@@ -19,7 +19,7 @@ const App = () => {
       console.log(bookAdded);
 
       client.cache.updateQuery(
-        { query: ALL_BOOKS, variables: { genres: null } },
+        { query: ALL_BOOKS, variables: { genre: null } },
         (cachedData) => {
           if (!cachedData) {
             return { allBooks: [bookAdded] };
