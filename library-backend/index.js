@@ -29,6 +29,8 @@ mongoose.connect(MONGODB_URI)
     console.log("Error connecting to MongoDB:", error.message)
   })
 
+mongoose.set('debug', true)
+
 const start = async () => {
   const app = express()
   const httpServer = http.createServer(app)
@@ -44,26 +46,26 @@ const start = async () => {
   const server = new ApolloServer({
     schema,
     plugins: [
-      {
-        // Logging plugin
-        async requestDidStart(requestContext) {
-          console.log('Request started! Query:\n' + requestContext.request.query);
+      // {
+      //   // Logging plugin
+      //   async requestDidStart(requestContext) {
+      //     console.log('Request started! Query:\n' + requestContext.request.query);
 
-          return {
-            // Fires whenever Apollo Server will parse a GraphQL
-            // request to create its associated document AST.
-            async parsingDidStart(requestContext) {
-              console.log('Parsing started!');
-            },
+      //     return {
+      //       // Fires whenever Apollo Server will parse a GraphQL
+      //       // request to create its associated document AST.
+      //       async parsingDidStart(requestContext) {
+      //         console.log('Parsing started!');
+      //       },
 
-            // Fires whenever Apollo Server will validate a
-            // request's document AST against your GraphQL schema.
-            async validationDidStart(requestContext) {
-              console.log('Validation started!');
-            },
-          }
-        }
-      },
+      //       // Fires whenever Apollo Server will validate a
+      //       // request's document AST against your GraphQL schema.
+      //       async validationDidStart(requestContext) {
+      //         console.log('Validation started!');
+      //       },
+      //     }
+      //   }
+      // },
       ApolloServerPluginDrainHttpServer({ httpServer }),
       {
         async serverWillStart() {
